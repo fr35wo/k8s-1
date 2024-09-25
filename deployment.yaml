@@ -1,0 +1,32 @@
+apiVersion: apps/v1 # 사용자가 어떤 버전의 API를 사용하고 있는지
+kind: Deployment # 생성하고자 하는 객체 지정(파일 이름으로 구분하는게 아니다)
+metadata:  # 생성하는 객체의 이름 같은 중요데이터 포함
+  name: second-app-deployment
+  labels:
+    group: example
+spec:  # deployment의 사양
+  replicas: 1 # 복제본 수
+  selector: 
+    matchLabels:
+      app: second-app # deployment와 일치시키려는 pod레이블의 키-값 쌍 추가 
+      tier : backend
+    # matchExpressions: 
+    #   - {key: app, operator: In, values: [second-app, first-app]} # 일치하는 객체 찾기위해 모두 충족되어야 하는 표현식의 목록 가진다.
+  template: # pod 정의 (--image로 이 deployment에 연결된 pod에서 사용되는 컨테이너에 사용할 이미지 정의) deployment의 template는 pod이므로 kind 정의 필요없음
+    metadata: # 생성하는 객체의 이름 같은 중요데이터 포함
+      labels: 
+        app: second-app # 값:app 키:second-app
+        tier : backend
+    spec: # pod의 사양
+      containers: 
+        - name: second-node # 동일한 pod에 여러 컨테이너를 가질 수 있다. - 로 목록 표시
+          image: seokhyeonhong/kub-first-app:2 # 사용이미지 지정
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            periodSeconds: 10 # 작업 수행 빈도
+            initialDelaySeconds: 5 # 쿠버네티스가 처음으로 상태 확일 할때까지 시간
+        # - name: ...
+        #   image: ...
+# 다른 컨테이너를 지닌 다른 pod를 원하면 다른 deployment가 필요하다.      

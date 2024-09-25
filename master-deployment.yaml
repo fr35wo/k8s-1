@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Service
+metadata: 
+  name: backend
+spec:
+  selector: # service의 일부가 되어야 하는 pod정의
+    app: second-app # 이 레이블을 가진 모든 pod는 service가 제어한다. 이 pod가 service에 의해 노출된다. (expose 명령어 참고)
+  ports:
+    - protocol: 'TCP'
+      port: 80 # 목표 포트에 노출하고자 하는 외부 세계 포트
+      targetPort: 8080
+    # - protocol: 'TCP'
+    #   port: 443
+    #   targetPort: 443
+  type: LoadBalancer
+---
+apiVersion: apps/v1 # 사용자가 어떤 버전의 API를 사용하고 있는지
+kind: Deployment # 생성하고자 하는 객체 지정(파일 이름으로 구분하는게 아니다)
+metadata:  # 생성하는 객체의 이름 같은 중요데이터 포함
+  name: second-app-deployment
+spec:  # deployment의 사양
+  replicas: 1 # 복제본 수
+  selector: 
+    matchLabels:
+      app: second-app # deployment와 일치시키려는 pod레이블의 키-값 쌍 추가 
+      tier : backend
+  template: # pod 정의 (--image로 이 deployment에 연결된 pod에서 사용되는 컨테이너에 사용할 이미지 정의) deployment의 template는 pod이므로 kind 정의 필요없음
+    metadata: # 생성하는 객체의 이름 같은 중요데이터 포함
+      labels: 
+        app: second-app # 값:app 키:second-app
+        tier : backend
+    spec: # pod의 사양
+      containers: 
+        - name: second-node # 동일한 pod에 여러 컨테이너를 가질 수 있다. - 로 목록 표시
+          image: seokhyeonhong/kub-first-app:2 # 사용이미지 지정
+        # - name: ...
+        #   image: ...
+# 다른 컨테이너를 지닌 다른 pod를 원하면 다른 deployment가 필요하다.      
